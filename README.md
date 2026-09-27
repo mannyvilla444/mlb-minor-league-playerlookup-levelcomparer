@@ -236,7 +236,30 @@ cache. `MLB_MAX_BULK_PLAYERS` (default 60) caps one submission.
 pytest
 ```
 
-128 tests, all offline — every MLB API response is mocked.
+141 tests, all offline — every MLB API response is mocked.
+
+---
+
+## The Translations tab
+
+`/translations` displays `app/static/minor-league-to-mlb-stat-translations.html`
+— an author-supplied reference page of mean OPS / SLG / BB% / K% changes from
+eight minor leagues to MLB.
+
+It is served **byte-for-byte**: the app does not parse, recompute or validate
+anything in it, and nothing on the Compare tab reads from it. It is a document
+sitting next to the tool, useful as a sanity check against your own numbers.
+
+The file renders inside an iframe rather than being pasted into a template. That
+keeps one source of truth (edit the file, the tab updates), lets it keep its own
+dark styling without fighting the app's stylesheet, and still leaves the app's
+navigation in place around it. A same-origin script sizes the frame to its
+content; with JavaScript off it falls back to a tall fixed frame. "Open on its
+own" links to the raw file.
+
+**To swap in a different document**, drop it in `app/static/` and point
+`TRANSLATIONS_FILENAME` in `app/config.py` at it. A missing file returns a 404
+page naming what it expected, rather than an empty frame.
 
 ---
 
@@ -387,8 +410,9 @@ mlb-level-stats/
 │   │   ├── formatting.py     number formats shared by tables and charts
 │   │   ├── cache.py          SQLite JSON cache
 │   │   └── models.py         dataclasses passed between layers
-│   ├── templates/            base, index, matches, results, compare, error
-│   └── static/styles.css
+│   ├── templates/            base, index, matches, results, compare,
+│   │                         translations, error
+│   └── static/               styles.css, levelstats.ico, the translations doc
 ├── tests/
 │   ├── fixtures.py           hand-built API payloads
 │   ├── test_mlb_client.py    lookup, multi-match, retries, caching, bulk fetch
@@ -396,6 +420,7 @@ mlb-level-stats/
 │   ├── test_compare.py       deltas, PA filter, mean/median, ambiguity
 │   ├── test_routes.py        every page, including empty and error states
 │   ├── test_compare_routes.py  the Compare tab end to end
+│   ├── test_translations_routes.py  the static doc and the 3-tab nav
 │   ├── test_run.py           launcher: port picking, browser timing
 │   ├── test_distribution.py  SD/SE, quartiles, whiskers, degenerate cases
 │   ├── test_boxplot.py       SVG marks, ticks, escaping, no NaN in markup
